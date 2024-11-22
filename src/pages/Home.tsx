@@ -1,21 +1,62 @@
 import React, { useState } from 'react'
-import { FaEarthAmericas, FaPlus } from "react-icons/fa6";
+import { FaCopy, FaEarthAmericas, FaPlus, FaTrash } from "react-icons/fa6";
 import floorIcon from '../assets/icons/floor.svg';
 import tableImage1 from '../assets/icons/Table.svg';
 import tableImage2 from '../assets/icons/Mid.svg';
-
+import { Rnd } from 'react-rnd';
 import incrementImage from '../assets/icons/plus.svg';
 import decrementImage from '../assets/icons/mininum-btn.svg';
 import { IoMdMore } from 'react-icons/io';
 import { MdTableRestaurant } from 'react-icons/md';
-import { FaUserFriends } from 'react-icons/fa';
+import { FaEdit, FaUserFriends } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { addTable, copyTable, deleteTable, selectTable, updateTable } from '../redux/tableSlice';
 function Home() {
 
-    const [isChecked, setIsChecked] = useState(false);
+    const tables = useSelector((state: RootState) => state.tables.tables);
+    const selectedTableId = useSelector(
+        (state: RootState) => state.tables.selectedTableId
+    );
 
-    const handleToggle = () => {
-        setIsChecked(!isChecked);
+    const selectedTable = useSelector((state: RootState) =>
+        state.tables.tables.find((table) => table.id === selectedTableId)
+    );
+
+    const dispatch = useDispatch();
+
+
+
+    // const handleDragStop = (id: string, x: number, y: number) => {
+    //     dispatch(updateTable({ id, updates: { x, y } }));
+    //   };
+
+    const handleDragStop = (id: string, x: number, y: number) => {
+        dispatch(updateTable({ id, updates: { x, y } }));
     };
+
+    const handleResizeStop = (id: string, width: number, height: number) => {
+        dispatch(updateTable({ id, updates: { width, height } }));
+    };
+
+    const handleSelect = (id: string) => {
+        dispatch(selectTable(id));
+    };
+
+    const findTotalTables = () => {
+        return tables.length;
+    }
+    const findTotalMainCovers = () => {
+        return tables.reduce((total, table) => total + table.minCovers, 0);
+    }
+    const findTotalMaxCovers = () => {
+        return tables.reduce((total, table) => total + table.maxCovers, 0);
+    }
+    const findTotalOnline = () => {
+        return tables.filter((table) => table.online).length;
+    }
+
+
 
 
     return (
@@ -61,10 +102,14 @@ function Home() {
 
                             {/* table images */}
                             <div className="flex items-center">
-                                <div className="w-1/2">
+                                <div className="w-1/2"
+                                    onClick={() => dispatch(addTable({ type: 'type1' }))}
+                                >
                                     <img src={tableImage1} alt="table" className='w-16 h-16' />
                                 </div>
-                                <div className="w-1/2">
+                                <div className="w-1/2"
+                                    onClick={() => dispatch(addTable({ type: 'type2' }))}
+                                >
                                     <img src={tableImage2} alt="table" className='w-16 h-16' />
                                 </div>
                             </div>
@@ -91,19 +136,31 @@ function Home() {
 
                                 <div className='flex flex-col space-y-6'>
                                     {/* Table name input */}
-                                    <input type="text" id='table-name' className='border border-gray-200 p-2 rounded-md w-24 h-8' />
+                                    <input type="text" id='table-name' className='border border-gray-200 p-2 rounded-md w-24 h-8 text-xs font-bold'
+                                        value={selectedTable?.name || "Select Table"} onChange={(e) => dispatch(updateTable({ id: selectedTableId!, updates: { name: e.target.value } }))}
+                                    />
                                     {/*Min Covers  increament and decreament */}
                                     <div className='flex gap-3 items-center'>
-                                        <img src={decrementImage} alt="decrement" />
-                                        <p className='font-bold'>1</p>
-                                        <img src={incrementImage} alt="decrement" />
+                                        <img src={decrementImage} alt="decrement"
+                                            onClick={() => dispatch(updateTable({ id: selectedTableId!, updates: { minCovers: selectedTable!.minCovers - 1 } }))}
+
+                                        />
+                                        <p className='font-bold'>{selectedTable?.minCovers || 0}</p>
+                                        <img src={incrementImage} alt="decrement"
+                                            onClick={() => dispatch(updateTable({ id: selectedTableId!, updates: { minCovers: selectedTable!.minCovers + 1 } }))}
+
+                                        />
                                     </div>
 
                                     {/* Max Covers  increament and decreament */}
                                     <div className='flex gap-3 items-center'>
-                                        <img src={decrementImage} alt="decrement" />
-                                        <p className='font-bold'>1</p>
-                                        <img src={incrementImage} alt="decrement" />
+                                        <img src={decrementImage} alt="decrement"
+                                            onClick={() => dispatch(updateTable({ id: selectedTableId!, updates: { maxCovers: selectedTable!.maxCovers - 1 } }))}
+                                        />
+                                        <p className='font-bold'>{selectedTable?.maxCovers || 0}</p>
+                                        <img src={incrementImage} alt="decrement"
+                                            onClick={() => dispatch(updateTable({ id: selectedTableId!, updates: { maxCovers: selectedTable!.maxCovers + 1 } }))}
+                                        />
                                     </div>
 
                                     {/* Active toggle */}
@@ -112,13 +169,14 @@ function Home() {
                                             id="toggle"
                                             type="checkbox"
                                             className="sr-only"
-                                            checked={isChecked}
-                                            onChange={handleToggle}
+                                            checked={selectedTable?.online}
+                                            onChange={(e) => dispatch(updateTable({ id: selectedTableId!, updates: { online: e.target.checked } }))}
                                         />
                                         <div className="w-11 h-6 bg-gray-200 rounded-full peer transition-colors duration-200 ease-in-out">
                                             <div
-                                                className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out transform ${isChecked ? 'translate-x-5 bg-red-500' : 'bg-gray-400'
+                                                className={`w-5 h-5  rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${selectedTable?.online ? 'translate-x-5 bg-red-500' : 'translate-x-0 bg-white'
                                                     }`}
+
                                             />
                                         </div>
                                     </label>
@@ -168,26 +226,92 @@ function Home() {
                         </div>
                     </div>
 
+
+                    {tables.map((table) => (
+                        <Rnd
+                            key={table.id}
+                            position={{ x: table.x, y: table.y }}
+                            bounds="parent"
+                            enableResizing={{ bottomRight: true }}
+                            onDragStop={(e, d) => handleDragStop(table.id, d.x, d.y)}
+                            onClick={() => handleSelect(table.id)}
+                            className="relative group"
+                        >
+                            {/* Tooltip */}
+                            <div
+                                className="absolute -top-10 left-1/2 transform -translate-x-1/2 
+                   bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 
+                   group-hover:opacity-100 transition-opacity flex space-x-2"
+                            >
+                                {/* Edit Icon */}
+                                <button
+                                    className="flex items-center justify-center w-6 h-6 bg-blue-500 rounded-full hover:bg-blue-600"
+                                    onClick={() => handleSelect(table.id)}
+                                >
+                                    <FaEdit size={12} />
+                                </button>
+
+                                {/* Copy Icon */}
+                                <button
+                                    className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full hover:bg-green-600"
+                                    onClick={() => dispatch(copyTable(selectedTableId!))}
+                                >
+                                    <FaCopy size={12} />
+                                </button>
+
+                                {/* Delete Icon */}
+                                <button
+                                    className="flex items-center justify-center w-6 h-6 bg-red-500 rounded-full hover:bg-red-600"
+                                    onClick={() => dispatch(deleteTable(selectedTableId!))}
+                                >
+                                    <FaTrash size={12} />
+                                </button>
+                            </div>
+
+                            {/* Table */}
+                            {table.type === 'type1' ? (
+                                <img src={tableImage1} alt="table" className="w-16 h-16" />
+                            ) : (
+                                <img src={tableImage2} alt="table" className="w-16 h-16" />
+                            )}
+                        </Rnd>
+                    ))}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     {/* table details */}
 
-                    <div className="bg-black left-1/2 transform -translate-x-1/2 absolute bottom-4 mx-auto px-4  py-2 flex gap-10 items-center">
-                        <div className="flex gap-4 items-center">
+                    <div className="bg-black left-1/2 transform -translate-x-1/2 absolute bottom-4 mx-auto px-4 py-2 flex gap-10 items-center">
+                        <div className="flex items-center gap-2">
                             <MdTableRestaurant className="text-white" size={12} />
-                            <h1 className='text-white text-xs'>76 Tables</h1>
+                            <span className="text-white text-xs">{findTotalTables()} Tables</span>
                         </div>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-2">
                             <FaUserFriends className="text-white" size={12} />
-                            <h1 className='text-white text-xs'>76 Tables</h1>
+                            <span className="text-white text-xs">{findTotalMainCovers()} Min Covers</span>
                         </div>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-2">
                             <FaUserFriends className="text-white" size={12} />
-                            <h1 className='text-white text-xs'>76 Tables</h1>
+                            <span className="text-white text-xs">{findTotalMaxCovers()} Max Covers</span>
                         </div>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-2">
                             <FaEarthAmericas className="text-white" size={12} />
-                            <h1 className='text-white text-xs'>76 Tables</h1>
+                            <span className="text-white text-xs">{findTotalOnline()} Online</span>
                         </div>
                     </div>
+
 
 
                 </div>
