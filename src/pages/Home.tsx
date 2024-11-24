@@ -27,16 +27,9 @@ function Home() {
 
 
 
-    // const handleDragStop = (id: string, x: number, y: number) => {
-    //     dispatch(updateTable({ id, updates: { x, y } }));
-    //   };
 
     const handleDragStop = (id: string, x: number, y: number) => {
         dispatch(updateTable({ id, updates: { x, y } }));
-    };
-
-    const handleResizeStop = (id: string, width: number, height: number) => {
-        dispatch(updateTable({ id, updates: { width, height } }));
     };
 
     const handleSelect = (id: string) => {
@@ -130,7 +123,7 @@ function Home() {
                                     <label htmlFor="table-name" className='text-gray-700 text-sm'>Table Name</label>
                                     <label htmlFor="min-covers" className='text-gray-700 text-sm'>Min Covers</label>
                                     <label htmlFor="max-covers" className='text-gray-700 text-sm'>Max Covers</label>
-                                    <label htmlFor="Online" className='text-gray-700 text-sm'>Active</label>
+                                    <label htmlFor="Online" className='text-gray-700 text-sm'>Online</label>
 
                                 </div>
 
@@ -164,7 +157,8 @@ function Home() {
                                     </div>
 
                                     {/* Active toggle */}
-                                    <label htmlFor="toggle" className="relative inline-flex items-center cursor-pointer">
+                                    <label htmlFor="toggle" className="relative  items-center cursor-pointer">
+                                        <span className="text-gray-700 text-sm">{selectedTable?.online ? 'Active' : 'Inactive'}</span>
                                         <input
                                             id="toggle"
                                             type="checkbox"
@@ -172,7 +166,7 @@ function Home() {
                                             checked={selectedTable?.online}
                                             onChange={(e) => dispatch(updateTable({ id: selectedTableId!, updates: { online: e.target.checked } }))}
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 rounded-full peer transition-colors duration-200 ease-in-out">
+                                        <div className="w-11 h-6  bg-gray-200 rounded-full peer transition-colors duration-200 ease-in-out">
                                             <div
                                                 className={`w-5 h-5  rounded-full shadow-md transform transition-transform duration-200 ease-in-out ${selectedTable?.online ? 'translate-x-5 bg-red-500' : 'translate-x-0 bg-white'
                                                     }`}
@@ -270,30 +264,41 @@ function Home() {
 
                             {/* Table */}
                             {table.type === 'type1' ? (
-                                <img src={tableImage1} alt="table" className="w-16 h-16" />
+                                <div
+                                    style={{
+                                        backgroundImage: `url(${tableImage1})`,
+                                        backgroundSize: 'contain',
+                                        backgroundPosition: 'center'
+
+
+                                    }}
+                                    className={`w-16 h-16  rounded-md flex items-center justify-center
+                        cursor-pointer`}
+                                >
+                                </div>
                             ) : (
-                                <img src={tableImage2} alt="table" className="w-16 h-16" />
+                                <div
+                                    style={{
+                                        backgroundImage: `url(${tableImage2})`,
+                                        backgroundSize: 'contain',
+                                        backgroundPosition: 'center',
+                                        backgroundRepeat: 'no-repeat'
+
+                                    }}
+                                    className={`w-16 h-16  rounded-full flex items-center justify-center
+                        cursor-pointer `}
+                                >
+                                </div>
                             )}
+
                         </Rnd>
                     ))}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
                     {/* table details */}
 
-                    <div className="bg-black left-1/2 transform -translate-x-1/2 absolute bottom-4 mx-auto px-4 py-2 flex gap-10 items-center">
+                    <div className="bg-black left-1/2 transform justify-between -translate-x-1/2 absolute bottom-4 mx-auto px-4 py-2 flex gap-10 items-center w-[500px]">
                         <div className="flex items-center gap-2">
                             <MdTableRestaurant className="text-white" size={12} />
                             <span className="text-white text-xs">{findTotalTables()} Tables</span>

@@ -52,7 +52,6 @@ const tableSlice = createSlice({
       const { id, updates } = action.payload;
       const table = state.tables.find((t) => t.id === id);
       if (table) {
-        // Update only the fields provided in `updates`
         Object.assign(table, updates);
       }
     },
