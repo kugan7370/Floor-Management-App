@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { FaCopy, FaEarthAmericas, FaPlus, FaTrash } from "react-icons/fa6";
 import floorIcon from '../assets/icons/floor.svg';
 import tableImage1 from '../assets/icons/Table.svg';
@@ -8,10 +8,13 @@ import incrementImage from '../assets/icons/plus.svg';
 import decrementImage from '../assets/icons/mininum-btn.svg';
 import { IoMdMore } from 'react-icons/io';
 import { MdTableRestaurant } from 'react-icons/md';
-import { FaEdit, FaUserFriends } from 'react-icons/fa';
+import { FaUserFriends } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
-import { addTable, copyTable, deleteTable, selectTable, updateTable } from '../redux/tableSlice';
+import { addTable, copyTable, deleteTable, resetTables, selectTable, updateTable } from '../redux/tableSlice';
+import { GoCopy, GoTrash } from 'react-icons/go';
+import { IoEllipseOutline } from 'react-icons/io5';
+
 function Home() {
 
     const tables = useSelector((state: RootState) => state.tables.tables);
@@ -26,11 +29,13 @@ function Home() {
     const dispatch = useDispatch();
 
 
-
-
     const handleDragStop = (id: string, x: number, y: number) => {
         dispatch(updateTable({ id, updates: { x, y } }));
     };
+
+    const handleResizeStop = (id: string, width: number, height: number) => {
+        dispatch(updateTable({ id, updates: { width, height } }));
+      };
 
     const handleSelect = (id: string) => {
         dispatch(selectTable(id));
@@ -181,15 +186,6 @@ function Home() {
 
                         </div>
 
-                        {/* Advance Settings */}
-                        <div className='flex flex-col space-y-6 border-b-2 border-gray-200 px-4 py-3'>
-                            <div className='flex justify-between items-center'>
-                                <label htmlFor="advance-settings" className='text-gray-700 text-sm'>Advance Settings</label>
-                                <input type="checkbox" id='advance-settings' />
-
-                            </div>
-
-                        </div>
 
                     </div>
 
@@ -202,13 +198,18 @@ function Home() {
 
                         {/* 3 buttons */}
                         <div className='flex gap-4 items-center'>
-                            <div className="bg-red-700 w-30 px-2 py-1  rounded flex items-center gap-2">
+                            <div className="bg-red-700 w-30 px-2 py-1  rounded flex items-center gap-2 cursor-pointer">
                                 <FaPlus className='text-white' size={10} />
                                 <h1 className='text-white text-xs'>Add Room</h1>
                             </div>
 
-                            <div className="w-30 px-2 py-1  rounded flex items-center gap-2 border border-gray-200">
+                            <div className="w-30 px-2 py-1  rounded flex items-center gap-2 border border-gray-200 cursor-pointer">
                                 <h1 className='text-gray-500 text-xs'>Save Room</h1>
+                            </div>
+
+                            {/* reset */}
+                            <div className="w-30 px-2 py-1  rounded flex items-center gap-2 border border-gray-200 cursor-pointer" onClick={() => dispatch(resetTables())} >
+                                <h1 className='text-gray-500 text-xs'>Reset</h1>
                             </div>
 
                             <div className="w-30 px-2 py-1  rounded flex items-center gap-2">
@@ -228,38 +229,50 @@ function Home() {
                             bounds="parent"
                             enableResizing={{ bottomRight: true }}
                             onDragStop={(e, d) => handleDragStop(table.id, d.x, d.y)}
+                            onResizeStop={(e, dir, ref, delta, position) =>
+                                handleResizeStop(
+                                    table.id,
+                                    parseInt(ref.style.width),
+                                    parseInt(ref.style.height)
+                                )
+                            }
+                            
                             onClick={() => handleSelect(table.id)}
                             className="relative group"
+                            style={{
+                                transform: `rotate(${table.rotation}deg)`,
+                               
+                              }}
                         >
                             {/* Tooltip */}
                             <div
                                 className="absolute -top-10 left-1/2 transform -translate-x-1/2 
-                   bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 
+                   text-xs   rounded opacity-0 shadow-md bg-white
                    group-hover:opacity-100 transition-opacity flex space-x-2"
                             >
                                 {/* Edit Icon */}
-                                <button
-                                    className="flex items-center justify-center w-6 h-6 bg-blue-500 rounded-full hover:bg-blue-600"
+                                <div
+                                    className="flex items-center justify-center  bg-white  hover:bg-gray-50 cursor-pointer   p-2 "
                                     onClick={() => handleSelect(table.id)}
                                 >
-                                    <FaEdit size={12} />
-                                </button>
+                                    <IoEllipseOutline size={12} />
+                                </div>
 
                                 {/* Copy Icon */}
-                                <button
-                                    className="flex items-center justify-center w-6 h-6 bg-green-500 rounded-full hover:bg-green-600"
+                                <div
+                                    className="flex items-center justify-center  bg-white cursor-pointer  hover:bg-gray-50  p-2"
                                     onClick={() => dispatch(copyTable(selectedTableId!))}
                                 >
-                                    <FaCopy size={12} />
-                                </button>
+                                    <GoCopy size={12} />
+                                </div>
 
                                 {/* Delete Icon */}
-                                <button
-                                    className="flex items-center justify-center w-6 h-6 bg-red-500 rounded-full hover:bg-red-600"
+                                <div
+                                    className="flex items-center justify-center  bg-white cursor-pointer  hover:bg-gray-50  p-2 "
                                     onClick={() => dispatch(deleteTable(selectedTableId!))}
                                 >
-                                    <FaTrash size={12} />
-                                </button>
+                                    <GoTrash size={12} />
+                                </div>
                             </div>
 
                             {/* Table */}
@@ -268,12 +281,14 @@ function Home() {
                                     style={{
                                         backgroundImage: `url(${tableImage1})`,
                                         backgroundSize: 'contain',
-                                        backgroundPosition: 'center'
+                                        backgroundPosition: 'center',
+                                        backgroundRepeat: 'no-repeat',
+                                        width: `${table.width}px`,
+                                        height: `${table.height}px`,
 
 
                                     }}
-                                    className={`w-16 h-16  rounded-md flex items-center justify-center
-                        cursor-pointer`}
+                                    className={`w-16 h-16  rounded-md flex items-center justify-center`}
                                 >
                                 </div>
                             ) : (
@@ -282,11 +297,13 @@ function Home() {
                                         backgroundImage: `url(${tableImage2})`,
                                         backgroundSize: 'contain',
                                         backgroundPosition: 'center',
-                                        backgroundRepeat: 'no-repeat'
+                                        backgroundRepeat: 'no-repeat',
+                                        width: `${table.width}px`,
+                                        height: `${table.height}px`,
+                                        
 
                                     }}
-                                    className={`w-16 h-16  rounded-full flex items-center justify-center
-                        cursor-pointer `}
+                                    className={`rounded-full flex items-center justify-center`}
                                 >
                                 </div>
                             )}

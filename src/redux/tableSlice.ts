@@ -10,8 +10,8 @@ interface Table {
   online: boolean;
   x: number;
   y: number;
-  // width: number;
-  // height: number;
+  width: number;
+  height: number;
   rotation: number;
 }
 
@@ -40,8 +40,8 @@ const tableSlice = createSlice({
         online: true,
         x: 100,
         y: 100,
-        // width: type === 'type1' ? 100 : 150,
-        // height: type === 'type1' ? 100 : 150,
+        width: type === 'type1' ? 100 : 150,
+        height: type === 'type1' ? 100 : 150,
         rotation: 0,
       });
     },
@@ -76,9 +76,13 @@ const tableSlice = createSlice({
     selectTable: (state, action: PayloadAction<string | null>) => {
       state.selectedTableId = action.payload;
     },
+
+    resetTables: (state) => {
+      state.tables = [];
+      state.selectedTableId = null
+  },
   },
 });
 
-export const { addTable, updateTable, deleteTable, copyTable, selectTable } =
-  tableSlice.actions;
+export const { addTable, updateTable, deleteTable, copyTable, selectTable,resetTables } =tableSlice.actions;
 export default tableSlice.reducer;
